@@ -1,5 +1,9 @@
 from fastapi import FastAPI, Depends
 import os
+import sys
+
+# Vercel Fix: Add current directory to sys.path so local imports work
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import get_db
