@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import os
 from fastapi.middleware.cors import CORSMiddleware
 import models, routers
 from database import engine
@@ -6,6 +7,9 @@ from database import engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+if os.getenv("VERCEL"):
+    app = FastAPI(root_path="/api/transactions")
 
 app.add_middleware(
     CORSMiddleware,

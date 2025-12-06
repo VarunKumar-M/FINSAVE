@@ -1,10 +1,14 @@
 from fastapi import FastAPI, Depends
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import get_db
 import analytics
 
 app = FastAPI()
+
+if os.getenv("VERCEL"):
+    app = FastAPI(root_path="/api/analytics")
 
 app.add_middleware(
     CORSMiddleware,

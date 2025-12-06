@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import models, schemas, auth
@@ -7,6 +8,11 @@ from database import engine, get_db
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Vercel Deployment Logic: Wrap the app to handle the /api/auth prefix if needed
+# This essentially mounts the app under /api/auth so it matches the incoming request path
+if os.getenv("VERCEL"):
+    app = FastAPI(root_path="/api/auth")
 
 app.add_middleware(
     CORSMiddleware,
