@@ -1,0 +1,42 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "frontend/package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        },
+        {
+            "src": "auth_service/main.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "transaction_service/main.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "analytics_service/main.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/auth/(.*)",
+            "dest": "/auth_service/main.py"
+        },
+        {
+            "src": "/api/transactions/(.*)",
+            "dest": "/transaction_service/main.py"
+        },
+        {
+            "src": "/api/analytics/(.*)",
+            "dest": "/analytics_service/main.py"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/frontend/$1"
+        }
+    ]
+}
