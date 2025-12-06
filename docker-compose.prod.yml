@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=finance_db
+    restart: always
+    networks:
+      - finance-network
+
+  auth_service:
+    build: ./auth_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/finance_db
+      - SECRET_KEY=supersecretkey
+      - ALGORITHM=HS256
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - finance-network
+
+  transaction_service:
+    build: ./transaction_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/finance_db
+      - AUTH_SERVICE_URL=http://auth_service:8000
+    depends_on:
+      - db
+      - auth_service
+    restart: always
+    networks:
+      - finance-network
+
+  analytics_service:
+    build: ./analytics_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/finance_db
+    depends_on:
+      - db
+      - transaction_service
+    restart: always
+    networks:
+      - finance-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80"
+    depends_on:
+      - auth_service
+      - transaction_service
+      - analytics_service
+    restart: always
+    networks:
+      - finance-network
+
+volumes:
+  postgres_data_prod:
+
+
+networks:
+  finance-network:
+    driver: bridge
